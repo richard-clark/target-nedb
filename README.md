@@ -1,4 +1,4 @@
-# nedb-target
+# target-nedb
 
 Singer.io Target for [NeDB](https://github.com/louischatriot/nedb), a lightweight MongoDB-like database for Node.JS.
 
