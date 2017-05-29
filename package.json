@@ -1,11 +1,12 @@
 {
   "name": "target-nedb",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "mocha spec.js"
   },
+  "bin": "./index.js",
   "author": "",
   "license": "ISC",
   "dependencies": {
