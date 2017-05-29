@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha spec.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,5 +13,10 @@
     "minimist": "^1.2.0",
     "nedb": "^1.8.0",
     "split": "^1.0.0"
+  },
+  "devDependencies": {
+    "chai": "^4.0.0",
+    "mocha": "^3.4.2",
+    "tmp": "0.0.31"
   }
 }

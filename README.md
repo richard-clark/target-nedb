@@ -23,3 +23,9 @@ get_singer_stream_somehow | nedb-target data/
 ```
 
 Use `nedb-target --help` for full usage information.
+
+## Testing
+
+Checkout the repo and run `npm install` to install development dependencies.
+
+Run tests with `npm test`.

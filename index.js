@@ -18,12 +18,15 @@ const argv = parseArgs(process.argv.slice(2), {
 
 if (argv._.length > 1 || argv.help || argv.h) {
   process.stdout.write(USAGE);
-  process.exit(0);
+  process.exit(1);
 }
 
 try {
-  nedbTarget(argv._[0], argv.echo);
+  nedbTarget({
+    dbBasePath: argv._[0],
+    echo: argv.echo
+  });
 } catch (error) {
   process.stdout.write(error + "\n");
-  process.exit(1);
+  process.exit(2);
 }

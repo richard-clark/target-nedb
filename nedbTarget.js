@@ -3,15 +3,25 @@ const Datastore = require("nedb");
 const path = require("path");
 const split = require("split");
 
-module.exports = function nedbTarget(dbBasePath="./", echo=false, stream=process.stdin) {
+module.exports = function nedbTarget({
+  dbBasePath="./",
+  echo=false,
+  inputStream=process.stdin,
+  outputStream=process.stdout
+}, doneCallback) {
 
   let schemasByStream = {};
   let keysPropertiesByStream = {};
   let datastoresByStream = {};
   let queue = [];
   let processing = false;
-  stream.pipe(split())
-    .on("data", (line) => _handleLine(line));
+  let streamExhausted = false;
+  inputStream.pipe(split())
+    .on("data", (line) => _handleLine(line))
+    .on("end", () => {
+      streamExhausted = true;
+      _processQueue();
+    });
 
   function _handleLine(line) {
     if (line.length > 0) {
@@ -19,7 +29,7 @@ module.exports = function nedbTarget(dbBasePath="./", echo=false, stream=process
       _processQueue();
     }
     if (echo) {
-      process.stdout.write(line + "\n");
+      outputStream.write(line + "\n");
     }
   }
 
@@ -27,7 +37,7 @@ module.exports = function nedbTarget(dbBasePath="./", echo=false, stream=process
     schemasByStream[data.stream] = data.schema;
     keysPropertiesByStream[data.stream] = data.key_properties;
     if (!data.key_properties) {
-      throw new Error("Missing key_properties");
+      return callback(new Error("Missing key_properties"));
     }
     callback();
   }
@@ -35,14 +45,16 @@ module.exports = function nedbTarget(dbBasePath="./", echo=false, stream=process
   function _processRecord(data, callback) {
     const schema = schemasByStream[data.stream];
     if (!schema) {
-      throw new Error(`No schema for stream '${data.stream}'`);
+      const error = new Error(`No schema for stream '${data.stream}'`);
+      return callback(error);
     }
 
     const ajv = new Ajv();
     const validator = ajv.compile(schema);
     const record = data.record;
     if (!validator(record)) {
-      throw new Error(`Validation failed for record: '${JSON.stringify(data)}' -- errors: '${JSON.stringify(validator.errors)}'`);
+      const error = new Error(`Validation failed for record: '${JSON.stringify(data)}' -- errors: '${JSON.stringify(validator.errors)}'`);
+      return callback(error);
     }
 
     let _id = null;
@@ -73,13 +85,25 @@ module.exports = function nedbTarget(dbBasePath="./", echo=false, stream=process
   }
 
   function _processQueue() {
-    if (processing || queue.length === 0) {
+    if (queue.length === 0) {
+      if (streamExhausted && doneCallback) {
+        doneCallback();
+      }
+      return;
+    }
+    if (processing) {
       return;
     }
     processing = true;
     const [line] = queue.splice(0, 1);
     const data = JSON.parse(line);
-    function _callback() {
+    function _callback(error) {
+      if (error) {
+        if (doneCallback) {
+          doneCallback(error);
+          return
+        }
+      }
       processing = false;
       _processQueue();
     }
@@ -91,6 +115,6 @@ module.exports = function nedbTarget(dbBasePath="./", echo=false, stream=process
     } else {
       _callback();
     }
-
   }
+
 }
