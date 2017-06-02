@@ -1,6 +1,6 @@
 # target-nedb
 
-Singer.io Target for [NeDB](https://github.com/louischatriot/nedb), a lightweight MongoDB-like database for Node.JS.
+Singer.io Target for [NeDB](https://github.com/louischatriot/nedb), a lightweight MongoDB-like database for Node.js.
 
 Compatible with any Tap that implements the [Singer Specification](https://github.com/singer-io/getting-started/blob/master/SPEC.md).
 
